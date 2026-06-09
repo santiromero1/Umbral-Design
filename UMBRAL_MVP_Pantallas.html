@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>UMBRAL · MVP v1 — Pantallas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Caveat:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css"/>
+<style>
+  html, body { height: 100%; background: var(--page-bg); }
+  #root { height: 100vh; }
+  .dc-postit { font-family: var(--note) !important; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<template id="__bundler_thumbnail">
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100" height="100" fill="#395714"/>
+    <g fill="#fafaf8">
+      <circle cx="34" cy="50" r="4.5"/><circle cx="50" cy="50" r="4.5"/><circle cx="66" cy="50" r="4.5"/>
+      <text x="50" y="72" font-family="Georgia, serif" font-size="13" text-anchor="middle" letter-spacing="2">UMBRAL</text>
+    </g>
+  </svg>
+</template>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="shared.jsx"></script>
+<script type="text/babel" src="app-inversor.jsx"></script>
+<script type="text/babel" src="backoffice.jsx"></script>
+
+<script type="text/babel">
+const { useState } = React;
+
+// Marco de teléfono que envuelve cada pantalla de la app
+function Phone({ children, dark = false }) {
+  return (
+    <IOSDevice width={390} height={844} dark={dark}>
+      {children}
+    </IOSDevice>
+  );
+}
+
+// Marco de navegador desktop simple para el backoffice
+function Desktop({ children }) {
+  return (
+    <div style={{ width: 1280, height: 800, borderRadius: 10, overflow: "hidden", border: "1px solid rgba(0,0,0,0.14)", boxShadow: "0 20px 60px rgba(0,0,0,0.16)", background: "#fff", display: "flex", flexDirection: "column" }}>
+      <div style={{ height: 38, background: "#e8e5dd", borderBottom: "1px solid rgba(0,0,0,0.08)", display: "flex", alignItems: "center", padding: "0 14px", gap: 8, flexShrink: 0 }}>
+        <div style={{ display: "flex", gap: 7 }}>
+          <span style={{ width: 11, height: 11, borderRadius: "50%", background: "#e1655a" }}></span>
+          <span style={{ width: 11, height: 11, borderRadius: "50%", background: "#e3b341" }}></span>
+          <span style={{ width: 11, height: 11, borderRadius: "50%", background: "#7fb56a" }}></span>
+        </div>
+        <div style={{ flex: 1, maxWidth: 420, margin: "0 auto", background: "#fafaf8", borderRadius: 5, height: 22, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: "#7d796f", fontFamily: "var(--sans)" }}>
+          backoffice.umbral.com
+        </div>
+        <div style={{ width: 56 }}></div>
+      </div>
+      <div style={{ flex: 1, minHeight: 0, position: "relative" }}>{children}</div>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <DesignCanvas>
+
+      {/* ── APP DEL INVERSOR ───────────────────────────── */}
+      <DCSection id="app-flujo" title="App del inversor · flujo principal" subtitle="Mobile 390px · la cara linda. Onboarding → Home → Contenido → Ayuda → Vender">
+        <DCArtboard id="onb-1" label="HP-01 · Onboarding — código" width={390} height={844}>
+          <Phone><InvOnboard1 value="UMB-2026-7F3A" /></Phone>
+        </DCArtboard>
+        <DCArtboard id="onb-2" label="HP-01 · Onboarding — datos + m²" width={390} height={844}>
+          <Phone><InvOnboard2 /></Phone>
+        </DCArtboard>
+        <DCArtboard id="login" label="HP-02 · Login" width={390} height={844}>
+          <Phone><InvLogin /></Phone>
+        </DCArtboard>
+        <DCArtboard id="home" label="HP-03 · Home — valorización ★" width={390} height={844}>
+          <Phone><InvHome /></Phone>
+        </DCArtboard>
+        <DCArtboard id="contenido" label="HP-04 · Contenido — novedades" width={390} height={844}>
+          <Phone><InvContent /></Phone>
+        </DCArtboard>
+        <DCArtboard id="news" label="HP-04 · Detalle de novedad" width={390} height={844}>
+          <Phone><InvNewsDetail index={0} /></Phone>
+        </DCArtboard>
+        <DCArtboard id="ayuda" label="HP-05 · Ayuda + FAQ" width={390} height={844}>
+          <Phone><InvAyuda /></Phone>
+        </DCArtboard>
+        <DCArtboard id="vender" label="HP-07 · Vender — intro" width={390} height={844}>
+          <Phone><InvSell /></Phone>
+        </DCArtboard>
+      </DCSection>
+
+      {/* ── APP · estados secundarios ──────────────────── */}
+      <DCSection id="app-estados" title="App del inversor · estados" subtitle="Galería, videos, sub-flujos y estados vacíos / error">
+        <DCArtboard id="fotos" label="HP-04 · Fotos" width={390} height={844}>
+          <Phone><InvContent initialTab="fotos" /></Phone>
+        </DCArtboard>
+        <DCArtboard id="videos" label="HP-04 · Videos" width={390} height={844}>
+          <Phone><InvContent initialTab="videos" /></Phone>
+        </DCArtboard>
+        <DCArtboard id="duda" label="HP-06 · Nueva duda" width={390} height={844}>
+          <Phone><InvNewDuda /></Phone>
+        </DCArtboard>
+        <DCArtboard id="duda-ok" label="HP-06 · Duda enviada" width={390} height={844}>
+          <Phone><InvNewDuda sent={true} /></Phone>
+        </DCArtboard>
+        <DCArtboard id="vender-2" label="HP-07 · Vender — motivo" width={390} height={844}>
+          <Phone><InvSell step="cuestionario" /></Phone>
+        </DCArtboard>
+        <DCArtboard id="vender-ok" label="HP-07 · Vender — enviado" width={390} height={844}>
+          <Phone><InvSell step="confirm" /></Phone>
+        </DCArtboard>
+        <DCArtboard id="empty" label="EMPTY-01 · Sin contenido" width={390} height={844}>
+          <Phone><InvEmpty /></Phone>
+        </DCArtboard>
+        <DCArtboard id="err-04" label="ERR-04 · Código inválido" width={390} height={844}>
+          <Phone><InvOnboard1 error={true} value="UMB-0000-XXXX" /></Phone>
+        </DCArtboard>
+      </DCSection>
+
+      {/* ── BACKOFFICE ─────────────────────────────────── */}
+      <DCSection id="bo" title="Backoffice · Admin UMBRAL" subtitle="Desktop 1280px · un solo rol que opera todo. Sin desarrolladora, sin aprobaciones.">
+        <DCArtboard id="bo-login" label="Login del equipo" width={1280} height={800}>
+          <Desktop><BOLogin /></Desktop>
+        </DCArtboard>
+        <DCArtboard id="bo-dev" label="HP-08 · Desarrollos" width={1280} height={800}>
+          <Desktop><BODesarrollos /></Desktop>
+        </DCArtboard>
+        <DCArtboard id="bo-newdev" label="HP-08 · Alta de desarrollo + cuotas" width={1280} height={800}>
+          <Desktop><BONewDev /></Desktop>
+        </DCArtboard>
+        <DCArtboard id="bo-inv" label="HP-09 · Inversores" width={1280} height={800}>
+          <Desktop><BOInversores /></Desktop>
+        </DCArtboard>
+        <DCArtboard id="bo-newinv" label="HP-09 · Alta inversor + código ★" width={1280} height={800}>
+          <Desktop><BONewInv /></Desktop>
+        </DCArtboard>
+        <DCArtboard id="bo-content" label="HP-10 · Carga de contenido" width={1280} height={800}>
+          <Desktop><BOContenido /></Desktop>
+        </DCArtboard>
+        <DCArtboard id="bo-pagos" label="HP-11 · Panel de pagos" width={1280} height={800}>
+          <Desktop><BOPagos /></Desktop>
+        </DCArtboard>
+        <DCArtboard id="bo-avisos" label="HP-12 · Avisos" width={1280} height={800}>
+          <Desktop><BOAvisos /></Desktop>
+        </DCArtboard>
+        <DCArtboard id="bo-ventas" label="HP-13 · Solicitudes de venta" width={1280} height={800}>
+          <Desktop><BOSolicitudes /></Desktop>
+        </DCArtboard>
+        <DCArtboard id="bo-metricas" label="HP-14 · Métricas por inversor" width={1280} height={800}>
+          <Desktop><BOMetricas /></Desktop>
+        </DCArtboard>
+      </DCSection>
+
+      {/* ── DEMOS VIVAS ────────────────────────────────── */}
+      <DCSection id="vivo" title="Demos interactivas" subtitle="Prototipos navegables — tocá la barra inferior / el menú lateral">
+        <DCArtboard id="app-live" label="App del inversor — navegable" width={390} height={844}>
+          <Phone><InvApp /></Phone>
+        </DCArtboard>
+        <DCArtboard id="bo-live" label="Backoffice — navegable" width={1280} height={800}>
+          <Desktop><BOApp /></Desktop>
+        </DCArtboard>
+      </DCSection>
+
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

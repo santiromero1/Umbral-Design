@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>UMBRAL Collection · MVP Pantallas</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="styles.css"/>
+
+<style>
+  html, body { background: #E9E3D6; min-height: 100vh; }
+  body { font-family: var(--font-sans); color: var(--ink); }
+</style>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+</head>
+<body>
+<div id="root"></div>
+
+<!-- Starter components & shared atoms -->
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="browser-window.jsx"></script>
+<script type="text/babel" src="shared.jsx"></script>
+
+<!-- Domain screens -->
+<script type="text/babel" src="investor.jsx"></script>
+<script type="text/babel" src="asesor.jsx"></script>
+<script type="text/babel" src="superuser.jsx"></script>
+
+<script type="text/babel">
+// =======================================================
+// Compose the full canvas
+// =======================================================
+
+const MOBILE_W = 390;
+const MOBILE_H = 844;
+const DESKTOP_W = 1280;
+const DESKTOP_H = 800;
+const ART_MOBILE = { w: 410, h: 870 };
+const ART_DESKTOP = { w: 1300, h: 820 };
+
+// Wrap a mobile screen in an iOS device frame
+function Mobile({ children, dark = false }) {
+  return (
+    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%", width: "100%", padding: 10 }}>
+      <IOSDevice width={MOBILE_W} height={MOBILE_H} dark={dark}>
+        {children}
+      </IOSDevice>
+    </div>
+  );
+}
+
+// Wrap a desktop screen in a browser window
+function Desktop({ children, url = "back.umbralcollection.com", tab = "UMBRAL · Back office" }) {
+  return (
+    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%", width: "100%", padding: 8 }}>
+      <ChromeWindow width={DESKTOP_W} height={DESKTOP_H}
+        tabs={[{ title: tab }, { title: "Resend dashboard" }, { title: "Supabase · UMBRAL" }]}
+        activeIndex={0} url={url}>
+        {children}
+      </ChromeWindow>
+    </div>
+  );
+}
+
+// Interactive wrappers ---------------------------------------------------
+
+function InvestorFlow() {
+  const [screen, setScreen] = React.useState("home");
+  const [projectId, setProjectId] = React.useState("pilara-forest");
+  // Tabs nav from bottom bar
+  const goTab = (t) => setScreen(t);
+  return (
+    <React.Fragment>
+      {screen === "home" && <InvHome onOpenProject={(pid)=>{ setProjectId(pid); setScreen("detail"); }} />}
+      {screen === "detail" && <InvDetail projectId={projectId} onBack={()=>setScreen("home")} />}
+      {screen === "blog" && <InvBlog/>}
+      <BottomTabsHandler screen={screen} onChange={goTab}/>
+    </React.Fragment>
+  );
+}
+// Override the BottomTabs interactivity for the flow (since the static BottomTabs has fixed active)
+function BottomTabsHandler({ screen, onChange }) {
+  // Re-render the existing tabbar with handler by replacing it via DOM is overkill; instead the BottomTabs
+  // inside each screen receives this as a prop. We just don't render here.
+  return null;
+}
+
+// Variant: project list using investor flow but with onChange via context
+// Simpler approach: wrap each screen with own bottom tabs override.
+
+function InvestorHomeArt({ initial = "home" }) {
+  const [screen, setScreen] = React.useState(initial);
+  const [projectId, setProjectId] = React.useState("pilara-forest");
+  return (
+    <Mobile>
+      <div style={{ position: "relative", height: "100%" }}>
+        {screen === "home" && (
+          <React.Fragment>
+            <InvHome onOpenProject={(pid)=>{ setProjectId(pid); setScreen("detail"); }} />
+            <BottomTabsOverride active="home" onChange={setScreen}/>
+          </React.Fragment>
+        )}
+        {screen === "detail" && (
+          <React.Fragment>
+            <InvDetail projectId={projectId} onBack={()=>setScreen("home")}/>
+            <BottomTabsOverride active="home" onChange={setScreen}/>
+          </React.Fragment>
+        )}
+        {screen === "blog" && (
+          <React.Fragment>
+            <InvBlog/>
+            <BottomTabsOverride active="blog" onChange={setScreen}/>
+          </React.Fragment>
+        )}
+      </div>
+    </Mobile>
+  );
+}
+
+// The BottomTabs in each screen already renders, so we override by positioning above
+function BottomTabsOverride({ active, onChange }) {
+  // Already rendered by the screens — we attach event delegation
+  React.useEffect(() => {
+    const root = document.body;
+    const handler = (e) => {
+      const tab = e.target.closest(".mob-tab");
+      if (!tab) return;
+      const txt = tab.textContent.trim().toLowerCase();
+      if (txt.includes("home")) onChange("home");
+      else if (txt.includes("blog")) onChange("blog");
+    };
+    root.addEventListener("click", handler);
+    return () => root.removeEventListener("click", handler);
+  }, [onChange]);
+  return null;
+}
+
+// =======================================================
+// Top-level App with all artboards
+// =======================================================
+
+function App() {
+  // Asesor flow with modal states
+  const [asesorModal, setAsesorModal] = React.useState(null); // "newClient" | "infoClient" | "newProject" | "updateProject" | null
+  const [selectedClient, setSelectedClient] = React.useState(null);
+  const [selectedProject, setSelectedProject] = React.useState(null);
+
+  // Superuser modals
+  const [suModal, setSuModal] = React.useState(null); // "newDev" | "request"
+  const [selectedRequest, setSelectedRequest] = React.useState(null);
+
+  return (
+    <DesignCanvas>
+      {/* ─────────────────────────────────────────────── */}
+      <DCSection id="inversor" title="Inversor · App Mobile"
+        subtitle="Webservice responsive · primero pensado para mobile · puramente informativo">
+
+        <DCArtboard id="inv-login" label="01 · Login" width={ART_MOBILE.w} height={ART_MOBILE.h}>
+          <Mobile><InvLogin/></Mobile>
+        </DCArtboard>
+
+        <DCArtboard id="inv-home" label="02 · Home · portfolio" width={ART_MOBILE.w} height={ART_MOBILE.h}>
+          <InvestorHomeArt initial="home"/>
+        </DCArtboard>
+
+        <DCArtboard id="inv-detail" label="03 · Detalle inversión" width={ART_MOBILE.w} height={ART_MOBILE.h}>
+          <Mobile>
+            <div style={{ position: "relative", height: "100%" }}>
+              <InvDetail projectId="pilara-forest"/>
+            </div>
+          </Mobile>
+        </DCArtboard>
+
+        <DCArtboard id="inv-detail-proj" label="04 · Detalle · ficha proyecto" width={ART_MOBILE.w} height={ART_MOBILE.h}>
+          <Mobile>
+            <div style={{ position: "relative", height: "100%" }}>
+              <InvDetailWithTab tab="proyecto"/>
+            </div>
+          </Mobile>
+        </DCArtboard>
+
+        <DCArtboard id="inv-detail-soporte" label="05 · Detalle · soporte" width={ART_MOBILE.w} height={ART_MOBILE.h}>
+          <Mobile>
+            <div style={{ position: "relative", height: "100%" }}>
+              <InvDetailWithTab tab="soporte"/>
+            </div>
+          </Mobile>
+        </DCArtboard>
+
+        <DCArtboard id="inv-blog" label="06 · Blog · novedades" width={ART_MOBILE.w} height={ART_MOBILE.h}>
+          <Mobile><InvBlog/></Mobile>
+        </DCArtboard>
+      </DCSection>
+
+      {/* ─────────────────────────────────────────────── */}
+      <DCSection id="asesor" title="Asesor · Back office Desarrolladora"
+        subtitle="Carga solicitudes y altas de inversores. Nada se publica sin la aprobación del superuser UMBRAL.">
+
+        <DCArtboard id="dev-login" label="01 · Login desarrolladora" width={ART_DESKTOP.w} height={ART_DESKTOP.h}>
+          <Desktop url="back.umbralcollection.com/login" tab="UMBRAL · Ingresar">
+            <DevLogin/>
+          </Desktop>
+        </DCArtboard>
+
+        <DCArtboard id="dev-clients" label="02 · Clientes · CRM" width={ART_DESKTOP.w} height={ART_DESKTOP.h}>
+          <Desktop url="back.umbralcollection.com/clientes">
+            <DevClients
+              onNewClient={()=>setAsesorModal("newClient")}
+              onOpenClient={(c)=>{ setSelectedClient(c); setAsesorModal("infoClient"); }}
+            />
+            {asesorModal === "newClient" && <NewClientModal onClose={()=>setAsesorModal(null)}/>}
+            {asesorModal === "infoClient" && <ClientInfoModal client={selectedClient} onClose={()=>setAsesorModal(null)}/>}
+          </Desktop>
+        </DCArtboard>
+
+        <DCArtboard id="dev-newclient" label="03 · Nuevo cliente" width={ART_DESKTOP.w} height={ART_DESKTOP.h}>
+          <Desktop url="back.umbralcollection.com/clientes/nuevo">
+            <DevClients onNewClient={()=>{}} onOpenClient={()=>{}}/>
+            <NewClientModal onClose={()=>{}}/>
+          </Desktop>
+        </DCArtboard>
+
+        <DCArtboard id="dev-clientinfo" label="04 · Ficha de cliente" width={ART_DESKTOP.w} height={ART_DESKTOP.h}>
+          <Desktop url="back.umbralcollection.com/clientes/0001">
+            <DevClients onNewClient={()=>{}} onOpenClient={()=>{}}/>
+            <ClientInfoModal client={DEV_CLIENTS[0]} onClose={()=>{}}/>
+          </Desktop>
+        </DCArtboard>
+
+        <DCArtboard id="dev-projects" label="05 · Proyectos · CRM" width={ART_DESKTOP.w} height={ART_DESKTOP.h}>
+          <Desktop url="back.umbralcollection.com/proyectos">
+            <DevProjects
+              onNewProject={()=>{}}
+              onUpdateProject={()=>{}}
+            />
+          </Desktop>
+        </DCArtboard>
+
+        <DCArtboard id="dev-newproject" label="06 · Nuevo proyecto" width={ART_DESKTOP.w} height={ART_DESKTOP.h}>
+          <Desktop url="back.umbralcollection.com/proyectos/nuevo">
+            <DevProjects onNewProject={()=>{}} onUpdateProject={()=>{}}/>
+            <NewProjectModal onClose={()=>{}}/>
+          </Desktop>
+        </DCArtboard>
+
+        <DCArtboard id="dev-update" label="07 · Actualizar proyecto" width={ART_DESKTOP.w} height={ART_DESKTOP.h}>
+          <Desktop url="back.umbralcollection.com/proyectos/las-lomas-220">
+            <DevProjects onNewProject={()=>{}} onUpdateProject={()=>{}}/>
+            <UpdateProjectModal project={DEV_PROJECTS[2]} onClose={()=>{}}/>
+          </Desktop>
+        </DCArtboard>
+      </DCSection>
+
+      {/* ─────────────────────────────────────────────── */}
+      <DCSection id="superuser" title="Superuser UMBRAL · Control editorial"
+        subtitle="Aprueba o rechaza las solicitudes de las desarrolladoras. Es el único rol que publica en la app del inversor.">
+
+        <DCArtboard id="su-login" label="01 · Login superuser" width={ART_DESKTOP.w} height={ART_DESKTOP.h}>
+          <Desktop url="back.umbralcollection.com/superuser" tab="UMBRAL · Superuser">
+            <SuLogin/>
+          </Desktop>
+        </DCArtboard>
+
+        <DCArtboard id="su-devs" label="02 · Desarrolladoras" width={ART_DESKTOP.w} height={ART_DESKTOP.h}>
+          <Desktop url="back.umbralcollection.com/superuser/desarrolladoras" tab="UMBRAL · Superuser">
+            <SuDevelopers onNewDev={()=>setSuModal("newDev")}/>
+            {suModal === "newDev" && <NewDeveloperModal onClose={()=>setSuModal(null)}/>}
+          </Desktop>
+        </DCArtboard>
+
+        <DCArtboard id="su-newdev" label="03 · Nueva desarrolladora" width={ART_DESKTOP.w} height={ART_DESKTOP.h}>
+          <Desktop url="back.umbralcollection.com/superuser/desarrolladoras/nueva" tab="UMBRAL · Superuser">
+            <SuDevelopers onNewDev={()=>{}}/>
+            <NewDeveloperModal onClose={()=>{}}/>
+          </Desktop>
+        </DCArtboard>
+
+        <DCArtboard id="su-requests" label="04 · Solicitudes" width={ART_DESKTOP.w} height={ART_DESKTOP.h}>
+          <Desktop url="back.umbralcollection.com/superuser/solicitudes" tab="UMBRAL · Superuser">
+            <SuRequests onOpenRequest={(r)=>{ setSelectedRequest(r); setSuModal("request"); }}/>
+            {suModal === "request" && <RequestDetailModal request={selectedRequest} onClose={()=>setSuModal(null)}/>}
+          </Desktop>
+        </DCArtboard>
+
+        <DCArtboard id="su-reqdetail" label="05 · Solicitud · revisar" width={ART_DESKTOP.w} height={ART_DESKTOP.h}>
+          <Desktop url="back.umbralcollection.com/superuser/solicitudes/REQ-0411" tab="UMBRAL · Superuser">
+            <SuRequests onOpenRequest={()=>{}}/>
+            <RequestDetailModal request={SU_REQUESTS[0]} onClose={()=>{}}/>
+          </Desktop>
+        </DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+// Helper for detail with specific tab open
+function InvDetailWithTab({ tab }) {
+  // We re-render InvDetail and click that tab after mount
+  const ref = React.useRef(null);
+  React.useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    // click tab inside
+    const btns = el.querySelectorAll("button");
+    btns.forEach(b => {
+      if (b.textContent.trim().toLowerCase() === tab) b.click();
+    });
+  }, [tab]);
+  return <div ref={ref} style={{ height: "100%" }}><InvDetail projectId="pilara-forest"/></div>;
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+
+</body>
+</html>
