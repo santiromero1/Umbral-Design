@@ -1,7 +1,8 @@
 // ============================================================
-// UMBRAL · App del inversor (mobile-first)
-// Onboarding · Login · Home (valorización) · Contenido · Ayuda
-// Nueva duda · Vender · Vacíos / error
+// UMBRAL · App del inversor (web responsive, mobile-first)
+// Burger menu (sin tabbar) · Home con edificio en vivo, accesos
+// directos y cuotas (ya pagué + add to calendar) · Contenido
+// como newsletter · Ayuda · Vender · Vacíos / error
 // Copy en voseo, sin palabras prohibidas (Design-Spec §5)
 // ============================================================
 
@@ -14,11 +15,20 @@ const DEV = {
   valor: 312000,
   ingreso: 258000,
   deltaPct: 20.9,
-  obra: 0.72,
-  etapa: "Etapa 3 de 5 · estructura",
+  obra: 0.63,
+  floors: 8,
+  floorsDone: 5,
+  etapaNum: 5,
+  etapaTotal: 8,
+  etapaName: "Mampostería",
+  proxima: "Instalaciones",
   entrega: "Marzo 2027",
   curve: [100, 101, 103, 104.5, 107, 110, 113, 117, 122, 128],
 };
+
+const PLAN_TOTAL = 12;
+const PLAN_PAGADAS = 8;
+const PROX_CUOTA = { n: 9, when: "Junio 2026", amt: "USD 4.200", venc: "10 jun 2026" };
 
 const CUOTAS = [
   { n: 6, when: "Marzo 2026", amt: "USD 4.200", ok: true },
@@ -29,18 +39,12 @@ const CUOTAS = [
 ];
 
 const NEWS = [
-  { date: "02 jun 2026", tag: "Obra", title: "Bajada de hormigón · nivel 4", note: "nivel 4 ✓",
-    body: "Se completó el colado de la losa del cuarto nivel. La estructura ya alcanza los 12 metros sobre la cota de vereda y arranca el montaje del nivel 5." },
-  { date: "19 may 2026", tag: "Obra", title: "Avanza la mampostería interior", note: "60% interior",
-    body: "La mampostería interior llegó al 60% en los niveles 1 a 3. Comienza el tendido de cañerías sanitarias primarias." },
-  { date: "04 may 2026", tag: "Hito", title: "Te invitamos a ver la obra", note: "sábado 17",
-    body: "Estás invitado a la visita de obra del sábado 17 de mayo. Vas a poder recorrer tu nivel y ver el avance de cerca." },
-];
-
-const PHOTOS = ["fachada · render", "estructura nivel 3", "vista al parque", "hall de acceso", "terraza · esquema", "unidad tipo"];
-const VIDEOS = [
-  { title: "Recorrido de obra · mayo 2026", len: "2:40" },
-  { title: "Cómo se proyecta el parque interno", len: "1:55" },
+  { date: "02 jun 2026", tag: "Obra", title: "Bajada de hormigón · nivel 4", note: "nivel 4 ✓", photos: 4, videos: 1,
+    body: "Se completó el colado de la losa del cuarto nivel. La estructura ya alcanza los 12 metros sobre la cota de vereda y arranca el montaje del nivel 5. Gracias por seguir de cerca cada etapa." },
+  { date: "19 may 2026", tag: "Obra", title: "Avanza la mampostería interior", note: "60% interior", photos: 6, videos: 0,
+    body: "La mampostería interior llegó al 60% en los niveles 1 a 3. Comienza el tendido de cañerías sanitarias primarias y la preparación de los pases de instalaciones." },
+  { date: "04 may 2026", tag: "Hito", title: "Te invitamos a ver la obra", note: "sábado 17", photos: 2, videos: 1,
+    body: "Estás invitado a la visita de obra del sábado 17 de mayo. Vas a poder recorrer tu nivel y ver el avance de cerca, acompañado por el equipo de UMBRAL." },
 ];
 
 const FAQ = [
@@ -55,35 +59,59 @@ const FAQ = [
 ];
 
 // ──────────────────────────────────────────────────────────
-// Bottom nav (4 tabs)
+// Header con burger + drawer (reemplaza la tabbar)
 // ──────────────────────────────────────────────────────────
-function BottomNav({ active = "inicio", onNav }) {
-  const tabs = [
+function MobMenu({ active, onNav, onClose }) {
+  const items = [
     ["inicio", "Inicio", I.home],
-    ["contenido", "Contenido", I.grid],
+    ["contenido", "Novedades", I.grid],
     ["ayuda", "Ayuda", I.help],
-    ["vender", "Vender", I.sell],
+    ["vender", "Vender mi unidad", I.sell],
   ];
   return (
-    <div className="mob-nav">
-      {tabs.map(([id, label, ic]) => (
-        <button key={id}
-          className={`mob-nav-item ${active === id ? "mob-nav-item--active" : ""} ${id === "vender" ? "mob-nav-item--sell" : ""}`}
-          onClick={() => onNav?.(id)}>
-          <span className="ic">{ic(20)}</span>{label}
-        </button>
-      ))}
+    <div className="drawer-bg" onClick={onClose}>
+      <div className="drawer" onClick={(e) => e.stopPropagation()}>
+        <div className="drawer-head">
+          <UmbralLogo height={22} />
+          <div style={{ flex: 1 }} />
+          <button className="burger" style={{ border: "none", background: "transparent" }} onClick={onClose}>{I.close(18)}</button>
+        </div>
+        <div className="drawer-user">
+          <Avatar initials="SR" size={40} />
+          <div style={{ lineHeight: 1.3 }}>
+            <div style={{ fontWeight: 500, fontSize: 14 }}>Santiago Ramírez</div>
+            <div style={{ fontSize: 12, color: "var(--muted)" }}>Tus {DEV.m2} m² · {DEV.name}</div>
+          </div>
+        </div>
+        <div className="drawer-nav">
+          {items.map(([id, label, ic]) => (
+            <button key={id} className={`drawer-item ${active === id ? "drawer-item--active" : ""} ${id === "vender" ? "drawer-item--sell" : ""}`}
+              onClick={() => onNav?.(id)}>
+              <span className="ico">{ic(20)}</span>{label}
+            </button>
+          ))}
+        </div>
+        <div style={{ marginTop: "auto", padding: "12px 28px 0", borderTop: "1px solid var(--hairline-2)", marginInline: 14 }}>
+          <button className="drawer-item" style={{ paddingInline: 0, color: "var(--muted)" }}><span className="ico">{I.gear(18)}</span>Configuración</button>
+          <button className="drawer-item" style={{ paddingInline: 0, color: "var(--muted)" }}><span className="ico">{I.back(18)}</span>Cerrar sesión</button>
+        </div>
+      </div>
     </div>
   );
 }
 
-function MobHeader({ action }) {
+function MobHeader({ onNav, active, menuOpen = false, back }) {
+  const [open, setOpen] = React.useState(menuOpen);
   return (
-    <div className="mob-h">
-      <UmbralLogo height={20} />
-      <div style={{ flex: 1 }} />
-      {action}
-    </div>
+    <React.Fragment>
+      <div className="mob-h">
+        {back && <RoundBtn onClick={back}>{I.back(18)}</RoundBtn>}
+        <UmbralLogo height={20} />
+        <div style={{ flex: 1 }} />
+        {!back && <button className="burger" onClick={() => setOpen(true)} aria-label="Menú">{I.burger(20)}</button>}
+      </div>
+      {open && <MobMenu active={active} onNav={(id) => { setOpen(false); onNav?.(id); }} onClose={() => setOpen(false)} />}
+    </React.Fragment>
   );
 }
 
@@ -118,7 +146,7 @@ function InvOnboard1({ error = false, value = "" }) {
           <input defaultValue={value} placeholder="Ej: UMB-2026-…" style={{ textAlign: "center", letterSpacing: "0.06em", fontFamily: "var(--mono)" }} />
           {error && <span className="err">Ese código no es válido. Revisalo e intentá de nuevo.</span>}
         </div>
-        <button className={`btn btn--primary btn--block ${value || error ? "" : ""}`} style={{ marginTop: 16 }} aria-disabled={!value && !error}>
+        <button className="btn btn--primary btn--block" style={{ marginTop: 16 }} aria-disabled={!value && !error}>
           Continuar
         </button>
         <div style={{ textAlign: "center", marginTop: 18, fontSize: 13, color: "var(--muted)" }}>
@@ -136,7 +164,7 @@ function InvOnboard1({ error = false, value = "" }) {
 function InvOnboard2() {
   return (
     <div className="mob">
-      <div className="mob-h" style={{ paddingBottom: 12 }}>
+      <div className="mob-h">
         <RoundBtn>{I.back(18)}</RoundBtn>
         <div style={{ flex: 1 }} />
         <div className="stepper" style={{ width: 64 }}><i className="on" /><i className="on" /></div>
@@ -186,12 +214,77 @@ function InvLogin() {
 }
 
 // ──────────────────────────────────────────────────────────
-// HOME — la joya visual
+// Card · Edificio en vivo
 // ──────────────────────────────────────────────────────────
-function InvHome({ onNav, onOpenNews }) {
+function EdificioCard() {
+  return (
+    <div className="mob-card" style={{ padding: "16px 16px 18px", marginBottom: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+        <span style={{ color: "var(--green)", display: "flex" }}>{I.building(18)}</span>
+        <span className="eyebrow">Tu edificio en vivo</span>
+      </div>
+      <p style={{ fontSize: 13, color: "var(--muted)", margin: "0 0 6px", lineHeight: 1.45 }}>
+        A medida que avanza la obra, el edificio se va terminando de pintar.
+      </p>
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <BuildingProgress floors={DEV.floors} done={DEV.floorsDone} />
+        <div style={{ flex: 1, paddingLeft: 6 }}>
+          <div className="serif" style={{ fontSize: 38, lineHeight: 1, color: "var(--ink)" }}>{Math.round(DEV.obra * 100)}%</div>
+          <div style={{ fontSize: 12.5, color: "var(--muted)", marginTop: 8 }}>Etapa {DEV.etapaNum}/{DEV.etapaTotal}</div>
+          <div style={{ fontSize: 14, fontWeight: 500, marginTop: 2 }}>{DEV.etapaName}</div>
+          <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 8 }}>Próxima: {DEV.proxima}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────────────────
+// Card · Cuotas (ya pagué + add to calendar)
+// ──────────────────────────────────────────────────────────
+function PagosCard() {
+  const [avisado, setAvisado] = React.useState(false);
+  const pct = Math.round((PLAN_PAGADAS / PLAN_TOTAL) * 100);
+  return (
+    <div className="mob-card" style={{ padding: "16px", marginBottom: 16 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
+        <span className="eyebrow">Tus cuotas</span>
+        <span style={{ fontSize: 12.5, color: "var(--muted)" }}>{PLAN_PAGADAS} de {PLAN_TOTAL} pagadas · {pct}%</span>
+      </div>
+      <div className="cuota-dots" style={{ marginBottom: 16 }}>
+        {Array.from({ length: PLAN_TOTAL }).map((_, i) => (
+          <i key={i} className={i < PLAN_PAGADAS ? "on" : (i === PLAN_PAGADAS ? "next" : "")} />
+        ))}
+      </div>
+      <div className="next-cuota" style={{ marginBottom: 14 }}>
+        <div style={{ width: 36, height: 36, borderRadius: "50%", background: "var(--paper)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--green)", flexShrink: 0 }}>{I.coin(18)}</div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 11, color: "var(--green-60)", letterSpacing: "0.06em", textTransform: "uppercase" }}>Próxima cuota</div>
+          <div style={{ fontSize: 14.5, fontWeight: 500, marginTop: 1 }}>Cuota {PROX_CUOTA.n} · {PROX_CUOTA.when}</div>
+          <div style={{ fontSize: 12, color: "var(--muted)" }}>Vence el {PROX_CUOTA.venc}</div>
+        </div>
+        <div className="serif" style={{ fontSize: 19, color: "var(--green)" }}>{PROX_CUOTA.amt}</div>
+      </div>
+      {avisado ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: 4, padding: "2px 2px 4px" }}>
+          <span className="paid-note">{I.check(15)} Le avisamos a UMBRAL que pagaste</span>
+          <span style={{ fontSize: 12, color: "var(--muted)" }}>Te confirmamos en cuanto lo registremos.</span>
+        </div>
+      ) : (
+        <button className="btn btn--primary btn--block" onClick={() => setAvisado(true)}>{I.check(15)} Ya pagué esta cuota</button>
+      )}
+      <button className="btn btn--ghost btn--block" style={{ marginTop: 8 }}>{I.calendar(16)} Agregar las cuotas a mi calendario</button>
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────────────────
+// HOME
+// ──────────────────────────────────────────────────────────
+function InvHome({ onNav, onOpenNews, menuOpen = false }) {
   return (
     <div className="mob">
-      <MobHeader action={<RoundBtn>{I.gear(18)}</RoundBtn>} />
+      <MobHeader onNav={onNav} active="inicio" menuOpen={menuOpen} />
       <div className="mob-scroll" style={{ paddingTop: 14 }}>
         <div style={{ marginBottom: 14 }}>
           <div className="eyebrow">Hola, Santiago</div>
@@ -207,6 +300,12 @@ function InvHome({ onNav, onOpenNews }) {
               <Pill kind="obra">En obra · {Math.round(DEV.obra * 100)}%</Pill>
               <Pill kind="neutral" dot={false}>Tus {DEV.m2} m²</Pill>
               <Pill kind="neutral" dot={false}>{DEV.developer}</Pill>
+            </div>
+            <hr className="hairline" style={{ margin: "16px 0 14px" }} />
+            <div className="quick">
+              <button onClick={() => onNav?.("contenido")}><span className="qic">{I.grid(20)}</span>Novedades</button>
+              <button onClick={() => onNav?.("ayuda")}><span className="qic">{I.help(20)}</span>Ayuda</button>
+              <button onClick={() => onNav?.("vender")}><span className="qic">{I.sell(20)}</span>Vender</button>
             </div>
           </div>
         </div>
@@ -232,41 +331,16 @@ function InvHome({ onNav, onOpenNews }) {
           </div>
         </div>
 
-        {/* avance de obra */}
-        <div className="mob-card" style={{ padding: "16px 16px 18px", marginBottom: 16 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
-            <span style={{ fontSize: 14, fontWeight: 500 }}>Avance de obra</span>
-            <span className="serif" style={{ fontSize: 20, color: "var(--green)" }}>{Math.round(DEV.obra * 100)}%</span>
-          </div>
-          <div className="bar"><i style={{ width: `${DEV.obra * 100}%` }} /></div>
-          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 9, fontSize: 11.5, color: "var(--muted)" }}>
-            <span>{DEV.etapa}</span><span>Entrega {DEV.entrega}</span>
-          </div>
-        </div>
+        {/* edificio en vivo */}
+        <EdificioCard />
 
-        {/* tus cuotas */}
-        <div className="sec-head" style={{ marginTop: 4 }}><h3>Tus cuotas</h3><span className="link">Ver plan {I.chev(12)}</span></div>
-        <div className="mob-card">
-          {CUOTAS.slice(2, 5).map((c) => (
-            <div key={c.n} className={`cuota ${c.ok ? "cuota--ok" : ""}`}>
-              <span className="ring" />
-              <div>
-                <div>Cuota {c.n}</div>
-                <div className="when">{c.when}</div>
-              </div>
-              <span className="amt">{c.amt}</span>
-              <span style={{ fontSize: 12, color: c.ok ? "var(--green)" : "var(--pend)", fontWeight: 500, marginLeft: 10 }}>
-                {c.ok ? "Pagada" : "Próxima"}
-              </span>
-            </div>
-          ))}
-        </div>
+        {/* cuotas */}
+        <PagosCard />
 
         {/* novedades */}
         <div className="sec-head"><h3>Novedades de obra</h3><span className="link" onClick={() => onNav?.("contenido")}>Ver todas {I.chev(12)}</span></div>
         <NewsCard n={NEWS[0]} onClick={() => onOpenNews?.(0)} />
       </div>
-      <BottomNav active="inicio" onNav={onNav} />
     </div>
   );
 }
@@ -274,89 +348,72 @@ function InvHome({ onNav, onOpenNews }) {
 function NewsCard({ n, onClick, compact }) {
   return (
     <div className="mob-card" style={{ overflow: "hidden", cursor: "pointer" }} onClick={onClick}>
-      <Ph label="foto de obra" note={n.note} height={compact ? 120 : 148} />
+      <Ph label="foto de obra" note={n.note} height={compact ? 140 : 148} />
       <div style={{ padding: "13px 15px 15px" }}>
         <div style={{ display: "flex", gap: 8, fontSize: 10, color: "var(--muted)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 6 }}>
           <span style={{ color: "var(--green)" }}>{n.tag}</span><span>·</span><span>{n.date}</span>
         </div>
-        <div className="serif" style={{ fontSize: 18, lineHeight: 1.15, textWrap: "pretty" }}>{n.title}</div>
-        {!compact && <p style={{ fontSize: 13, color: "var(--ink-2)", lineHeight: 1.55, margin: "8px 0 0" }}>{n.body}</p>}
+        <div className="serif" style={{ fontSize: 19, lineHeight: 1.15, textWrap: "pretty", marginBottom: 6 }}>{n.title}</div>
+        <p style={{ fontSize: 13, color: "var(--ink-2)", lineHeight: 1.55, margin: "0 0 10px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{n.body}</p>
+        <div style={{ display: "flex", gap: 12, fontSize: 11.5, color: "var(--muted)" }}>
+          {n.photos > 0 && <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>{I.image(14)} {n.photos} fotos</span>}
+          {n.videos > 0 && <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>{I.play(14)} {n.videos} video</span>}
+        </div>
       </div>
     </div>
   );
 }
 
 // ──────────────────────────────────────────────────────────
-// CONTENIDO — Novedades / Fotos / Videos
+// CONTENIDO — newsletter único
 // ──────────────────────────────────────────────────────────
-function InvContent({ onNav, onOpenNews, initialTab = "novedades" }) {
-  const [tab, setTab] = React.useState(initialTab);
+function InvContent({ onNav, onOpenNews }) {
   return (
     <div className="mob">
-      <MobHeader action={<RoundBtn>{I.bell(16)}</RoundBtn>} />
+      <MobHeader onNav={onNav} active="contenido" />
       <div className="mob-scroll" style={{ paddingTop: 14 }}>
-        <h1 className="serif" style={{ fontSize: 26, margin: "2px 0 16px" }}>Contenido</h1>
-        <div className="seg" style={{ marginBottom: 18 }}>
-          {[["novedades", "Novedades"], ["fotos", "Fotos"], ["videos", "Videos"]].map(([id, l]) => (
-            <button key={id} className={tab === id ? "on" : ""} onClick={() => setTab(id)}>{l}</button>
-          ))}
+        <h1 className="serif" style={{ fontSize: 26, margin: "2px 0 2px" }}>Novedades</h1>
+        <p style={{ fontSize: 13, color: "var(--muted)", margin: "0 0 18px" }}>Todo lo que pasa en tu obra, en un solo lugar.</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {NEWS.map((n, i) => <NewsCard key={i} n={n} compact onClick={() => onOpenNews?.(i)} />)}
         </div>
-
-        {tab === "novedades" && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            {NEWS.map((n, i) => <NewsCard key={i} n={n} compact onClick={() => onOpenNews?.(i)} />)}
-          </div>
-        )}
-        {tab === "fotos" && (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-            {PHOTOS.map((p, i) => <Ph key={i} label={p} height={118} style={{ borderRadius: 4 }} />)}
-          </div>
-        )}
-        {tab === "videos" && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {VIDEOS.map((v, i) => (
-              <div key={i} className="mob-card" style={{ overflow: "hidden" }}>
-                <div className="ph" style={{ height: 150, position: "relative" }}>
-                  <span style={{ position: "relative", zIndex: 1 }}>video · youtube</span>
-                  <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--green)" }}>{I.play(40)}</div>
-                </div>
-                <div style={{ padding: "12px 15px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: 14, fontWeight: 500 }}>{v.title}</span>
-                  <span className="mono" style={{ fontSize: 11, color: "var(--muted)" }}>{v.len}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
-      <BottomNav active="contenido" onNav={onNav} />
     </div>
   );
 }
 
-// Detalle de novedad (cuaderno de obra)
+// Detalle de novedad (con galería + video)
 function InvNewsDetail({ index = 0, onBack }) {
   const n = NEWS[index];
   return (
     <div className="mob">
-      <div className="mob-h" style={{ paddingBottom: 12 }}>
-        <RoundBtn onClick={onBack}>{I.back(18)}</RoundBtn>
-        <span style={{ fontSize: 12, color: "var(--muted)", marginLeft: 4 }}>Novedades de obra</span>
-      </div>
+      <MobHeader back={onBack} />
       <div className="mob-scroll" style={{ paddingTop: 8 }}>
-        <Ph label="foto de obra" note={n.note} height={220} style={{ borderRadius: 6, marginBottom: 16 }} />
+        <Ph label="foto de obra" note={n.note} height={210} style={{ borderRadius: 6, marginBottom: 16 }} />
         <div style={{ display: "flex", gap: 8, fontSize: 10, color: "var(--muted)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 8 }}>
           <span style={{ color: "var(--green)" }}>{n.tag}</span><span>·</span><span>{n.date}</span>
         </div>
-        <h1 className="serif" style={{ fontSize: 28, lineHeight: 1.1, margin: "0 0 14px", textWrap: "pretty" }}>{n.title}</h1>
+        <h1 className="serif" style={{ fontSize: 27, lineHeight: 1.12, margin: "0 0 14px", textWrap: "pretty" }}>{n.title}</h1>
         <p style={{ fontSize: 15, color: "var(--ink-2)", lineHeight: 1.65, margin: 0 }}>{n.body}</p>
-        <div style={{ margin: "22px 0", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-          <Ph label="detalle" note="hormigón" height={120} style={{ borderRadius: 4 }} />
-          <Ph label="detalle" note="nivel 4" height={120} style={{ borderRadius: 4 }} />
-        </div>
-        <div className="note" style={{ fontSize: 19, color: "var(--green-60)", textAlign: "center", padding: "8px 0 4px" }}>
-          — la obra avanza con vos —
-        </div>
+
+        {n.photos > 0 && (
+          <React.Fragment>
+            <div className="eyebrow" style={{ margin: "22px 0 10px" }}>Fotos</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+              {Array.from({ length: n.photos }).map((_, i) => <Ph key={i} label="foto" height={110} style={{ borderRadius: 4 }} />)}
+            </div>
+          </React.Fragment>
+        )}
+
+        {n.videos > 0 && (
+          <React.Fragment>
+            <div className="eyebrow" style={{ margin: "22px 0 10px" }}>Video</div>
+            <div className="ph" style={{ height: 170, borderRadius: 6, position: "relative" }}>
+              <span style={{ position: "relative", zIndex: 1 }}>video · youtube</span>
+              <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--green)" }}>{I.play(44)}</div>
+            </div>
+          </React.Fragment>
+        )}
       </div>
     </div>
   );
@@ -369,7 +426,7 @@ function InvAyuda({ onNav, onNewDuda }) {
   const [open, setOpen] = React.useState(0);
   return (
     <div className="mob">
-      <MobHeader />
+      <MobHeader onNav={onNav} active="ayuda" />
       <div className="mob-scroll" style={{ paddingTop: 14 }}>
         <h1 className="serif" style={{ fontSize: 26, margin: "2px 0 4px" }}>Ayuda</h1>
         <p style={{ fontSize: 13, color: "var(--muted)", margin: "0 0 20px" }}>Estamos para acompañarte. Mirá las preguntas frecuentes o escribinos.</p>
@@ -393,7 +450,6 @@ function InvAyuda({ onNav, onNewDuda }) {
           <button className="btn btn--primary btn--block" onClick={onNewDuda}>Abrir una consulta</button>
         </div>
       </div>
-      <BottomNav active="ayuda" onNav={onNav} />
     </div>
   );
 }
@@ -402,21 +458,18 @@ function InvAyuda({ onNav, onNewDuda }) {
 function InvNewDuda({ onBack, sent = false }) {
   if (sent) return (
     <div className="mob">
-      <div className="mob-h" style={{ paddingBottom: 12 }}><RoundBtn onClick={onBack}>{I.back(18)}</RoundBtn></div>
+      <MobHeader back={onBack} />
       <div className="mob-pad" style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", textAlign: "center" }}>
-        <div className="tick" style={{ width: 56, height: 56, borderRadius: "50%", background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>{I.check(24)}</div>
+        <div style={{ width: 56, height: 56, borderRadius: "50%", background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>{I.check(24)}</div>
         <h1 className="serif" style={{ fontSize: 28, margin: "0 0 8px" }}>Recibimos tu consulta.</h1>
         <p style={{ fontSize: 14, color: "var(--muted)", maxWidth: 240, lineHeight: 1.5 }}>El equipo de UMBRAL te va a responder por mail. Gracias por escribirnos.</p>
-        <button className="btn btn--soft" style={{ marginTop: 22 }} onClick={onBack}>Volver al inicio</button>
+        <button className="btn btn--soft" style={{ marginTop: 22 }} onClick={onBack}>Volver</button>
       </div>
     </div>
   );
   return (
     <div className="mob">
-      <div className="mob-h" style={{ paddingBottom: 12 }}>
-        <RoundBtn onClick={onBack}>{I.back(18)}</RoundBtn>
-        <span style={{ fontSize: 12, color: "var(--muted)", marginLeft: 4 }}>Nueva consulta</span>
-      </div>
+      <MobHeader back={onBack} />
       <div className="mob-scroll" style={{ paddingTop: 14 }}>
         <h1 className="serif" style={{ fontSize: 27, margin: "2px 0 6px", lineHeight: 1.1, textWrap: "pretty" }}>¿Tenés una duda? Escribinos.</h1>
         <p style={{ fontSize: 13, color: "var(--muted)", margin: "0 0 22px" }}>Sobre {DEV.name} · {DEV.developer}</p>
@@ -442,24 +495,20 @@ function InvSell({ onNav, step = "intro" }) {
 
   if (step === "confirm") return (
     <div className="mob">
-      <MobHeader />
+      <MobHeader onNav={onNav} active="vender" />
       <div className="mob-pad" style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", textAlign: "center" }}>
         <div style={{ width: 56, height: 56, borderRadius: "50%", background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>{I.check(24)}</div>
         <h1 className="serif" style={{ fontSize: 30, margin: "0 0 10px" }}>Recibimos tu solicitud.</h1>
         <p style={{ fontSize: 15, color: "var(--muted)", maxWidth: 250, lineHeight: 1.55 }}>Te vamos a contactar para acompañarte en la venta de tu unidad.</p>
       </div>
-      <BottomNav active="vender" onNav={onNav} />
     </div>
   );
 
   if (step === "cuestionario") return (
     <div className="mob">
-      <div className="mob-h" style={{ paddingBottom: 12 }}>
-        <RoundBtn>{I.back(18)}</RoundBtn>
-        <div style={{ flex: 1 }} />
-        <div className="stepper" style={{ width: 64 }}><i className="on" /><i className="on" /><i /></div>
-      </div>
+      <MobHeader onNav={onNav} active="vender" />
       <div className="mob-scroll" style={{ paddingTop: 14 }}>
+        <div className="stepper" style={{ marginBottom: 18 }}><i className="on" /><i className="on" /><i /></div>
         <h1 className="serif" style={{ fontSize: 26, margin: "2px 0 18px", lineHeight: 1.1 }}>¿Por qué querés vender?</h1>
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {motivos.map((m, i) => (
@@ -484,7 +533,7 @@ function InvSell({ onNav, step = "intro" }) {
   // intro
   return (
     <div className="mob">
-      <MobHeader />
+      <MobHeader onNav={onNav} active="vender" />
       <div className="mob-scroll" style={{ paddingTop: 14 }}>
         <div className="stepper" style={{ marginBottom: 22 }}><i className="on" /><i /><i /></div>
         <h1 className="serif" style={{ fontSize: 30, margin: "2px 0 14px", lineHeight: 1.08 }}>Quiero vender<br/>mi unidad</h1>
@@ -496,7 +545,7 @@ function InvSell({ onNav, step = "intro" }) {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
             <div>
               <div className="serif" style={{ fontSize: 22 }}>{DEV.name}</div>
-              <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2 }}>Tus {DEV.m2} m² · {DEV.etapa}</div>
+              <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2 }}>Tus {DEV.m2} m² · {DEV.etapaName}</div>
             </div>
             <div style={{ textAlign: "right" }}>
               <div className="serif" style={{ fontSize: 22, color: "var(--green)" }}>{usd(DEV.valor)}</div>
@@ -505,11 +554,10 @@ function InvSell({ onNav, step = "intro" }) {
           </div>
         </div>
         <button className="btn btn--primary btn--block" style={{ marginTop: 24 }}>Continuar</button>
-        <p className="note" style={{ textAlign: "center", fontSize: 17, color: "var(--muted)", margin: "16px 0 0" }}>
-          vender no es abandonar — es una decisión más
+        <p className="serif" style={{ textAlign: "center", fontStyle: "italic", fontSize: 16, color: "var(--muted)", margin: "16px 0 0" }}>
+          Vender no es abandonar — es una decisión más.
         </p>
       </div>
-      <BottomNav active="vender" onNav={onNav} />
     </div>
   );
 }
@@ -520,7 +568,7 @@ function InvSell({ onNav, step = "intro" }) {
 function InvEmpty({ onNav }) {
   return (
     <div className="mob">
-      <MobHeader action={<RoundBtn>{I.gear(18)}</RoundBtn>} />
+      <MobHeader onNav={onNav} active="inicio" />
       <div className="mob-scroll" style={{ paddingTop: 14 }}>
         <div style={{ marginBottom: 14 }}>
           <div className="eyebrow">Hola, Santiago</div>
@@ -544,7 +592,6 @@ function InvEmpty({ onNav }) {
           </p>
         </div>
       </div>
-      <BottomNav active="inicio" onNav={onNav} />
     </div>
   );
 }

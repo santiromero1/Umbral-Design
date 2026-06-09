@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/", "destination": "/UMBRAL_MVP_Pantallas.html" }
+  ]
+}

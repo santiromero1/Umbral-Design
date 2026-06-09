@@ -76,6 +76,13 @@ const I = {
   play:    (s=20)=><svg width={s} height={s} viewBox="0 0 22 22" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="11" cy="11" r="8.5"/><path d="M9 7.5l5 3.5-5 3.5z" fill="currentColor" stroke="none"/></svg>,
   gear:    (s=18)=><svg width={s} height={s} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.4"><circle cx="10" cy="10" r="2.4"/><path d="M10 2.6v2M10 15.4v2M3.5 6l1.7 1M14.8 13l1.7 1M3.5 14l1.7-1M14.8 7l1.7-1M2.6 10h2M15.4 10h2"/></svg>,
   doc:     (s=14)=><svg width={s} height={s} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M4 2h6l2 2v10H4z"/><path d="M10 2v3h2M6 8h4M6 11h3"/></svg>,
+  burger:  (s=20)=><svg width={s} height={s} viewBox="0 0 22 22" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M4 6.5h14M4 11h14M4 15.5h14" strokeLinecap="round"/></svg>,
+  calendar:(s=16)=><svg width={s} height={s} viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.4"><rect x="3" y="4" width="12" height="11" rx="1.5"/><path d="M3 7.5h12M6.5 2.5v3M11.5 2.5v3" strokeLinecap="round"/><path d="M6 10.5h2M10 10.5h2M6 12.8h2" strokeLinecap="round"/></svg>,
+  filter:  (s=14)=><svg width={s} height={s} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M2.5 4h11l-4.2 5v3.5L6.7 14V9z" strokeLinejoin="round"/></svg>,
+  edit:    (s=14)=><svg width={s} height={s} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M11.5 2.5l2 2L6 12l-2.6.6L4 10z" strokeLinejoin="round"/></svg>,
+  trash:   (s=14)=><svg width={s} height={s} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M3 4.5h10M6.5 4V2.8h3V4M4.2 4.5l.6 9h6.4l.6-9" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  reply:   (s=15)=><svg width={s} height={s} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M6 4L2.5 7.3 6 10.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M3 7.3h6.5a4 4 0 014 4V13" strokeLinecap="round"/></svg>,
+  send:    (s=16)=><svg width={s} height={s} viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M15.5 2.5L8 10M15.5 2.5l-4.5 13-3-5.5-5.5-3z" strokeLinejoin="round"/></svg>,
   google:  (s=18)=><svg width={s} height={s} viewBox="0 0 18 18"><path fill="#4285F4" d="M17.6 9.2c0-.6 0-1.1-.2-1.7H9v3.3h4.8a4 4 0 01-1.8 2.7v2.2h2.9c1.7-1.6 2.7-3.9 2.7-6.5z"/><path fill="#34A853" d="M9 18c2.4 0 4.5-.8 6-2.2l-2.9-2.3c-.8.6-1.9.9-3.1.9-2.4 0-4.4-1.6-5.1-3.8H.9v2.3A9 9 0 009 18z"/><path fill="#FBBC05" d="M3.9 10.7a5.4 5.4 0 010-3.4V5H.9a9 9 0 000 8l3-2.3z"/><path fill="#EA4335" d="M9 3.6c1.3 0 2.5.5 3.4 1.3l2.6-2.6A9 9 0 00.9 5l3 2.3C4.6 5.1 6.6 3.6 9 3.6z"/></svg>,
 };
 
@@ -110,6 +117,23 @@ function usd(n, { sign = false } = {}) {
 }
 function m2(n) { return n.toLocaleString("es-AR") + " m²"; }
 
+// --- Edificio en vivo (avance de obra que se “pinta”) -------
+function BuildingProgress({ floors = 8, done = 5 }) {
+  return (
+    <div className="bld">
+      <div className="bld-roof" />
+      <div className="bld-stack">
+        {Array.from({ length: floors }).map((_, i) => (
+          <div key={i} className={`bld-floor ${i < done ? "bld-floor--on" : ""}`}>
+            <span /><span /><span />
+          </div>
+        ))}
+      </div>
+      <div className="bld-base" />
+    </div>
+  );
+}
+
 Object.assign(window, {
-  UmbralLogo, UmbralMark, UmbralWord, Pill, Avatar, Ph, I, ValorCurve, usd, m2,
+  UmbralLogo, UmbralMark, UmbralWord, Pill, Avatar, Ph, I, ValorCurve, usd, m2, BuildingProgress,
 });

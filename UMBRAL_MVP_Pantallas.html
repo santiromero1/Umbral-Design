@@ -6,7 +6,7 @@
 <title>UMBRAL · MVP v1 — Pantallas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Caveat:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css"/>
 <style>
   html, body { height: 100%; background: var(--page-bg); }
@@ -74,7 +74,7 @@ function App() {
     <DesignCanvas>
 
       {/* ── APP DEL INVERSOR ───────────────────────────── */}
-      <DCSection id="app-flujo" title="App del inversor · flujo principal" subtitle="Mobile 390px · la cara linda. Onboarding → Home → Contenido → Ayuda → Vender">
+      <DCSection id="app-flujo" title="App del inversor · flujo principal" subtitle="Web responsive 390px · burger menu (sin tabbar). Onboarding → Home → Novedades → Ayuda → Vender">
         <DCArtboard id="onb-1" label="HP-01 · Onboarding — código" width={390} height={844}>
           <Phone><InvOnboard1 value="UMB-2026-7F3A" /></Phone>
         </DCArtboard>
@@ -84,13 +84,16 @@ function App() {
         <DCArtboard id="login" label="HP-02 · Login" width={390} height={844}>
           <Phone><InvLogin /></Phone>
         </DCArtboard>
-        <DCArtboard id="home" label="HP-03 · Home — valorización ★" width={390} height={844}>
+        <DCArtboard id="home" label="HP-03 · Home — edificio + valor ★" width={390} height={844}>
           <Phone><InvHome /></Phone>
         </DCArtboard>
-        <DCArtboard id="contenido" label="HP-04 · Contenido — novedades" width={390} height={844}>
+        <DCArtboard id="menu" label="HP-03 · Burger menu abierto" width={390} height={844}>
+          <Phone><InvHome menuOpen={true} /></Phone>
+        </DCArtboard>
+        <DCArtboard id="contenido" label="HP-04 · Novedades (newsletter)" width={390} height={844}>
           <Phone><InvContent /></Phone>
         </DCArtboard>
-        <DCArtboard id="news" label="HP-04 · Detalle de novedad" width={390} height={844}>
+        <DCArtboard id="news" label="HP-04 · Detalle de noticia" width={390} height={844}>
           <Phone><InvNewsDetail index={0} /></Phone>
         </DCArtboard>
         <DCArtboard id="ayuda" label="HP-05 · Ayuda + FAQ" width={390} height={844}>
@@ -102,13 +105,7 @@ function App() {
       </DCSection>
 
       {/* ── APP · estados secundarios ──────────────────── */}
-      <DCSection id="app-estados" title="App del inversor · estados" subtitle="Galería, videos, sub-flujos y estados vacíos / error">
-        <DCArtboard id="fotos" label="HP-04 · Fotos" width={390} height={844}>
-          <Phone><InvContent initialTab="fotos" /></Phone>
-        </DCArtboard>
-        <DCArtboard id="videos" label="HP-04 · Videos" width={390} height={844}>
-          <Phone><InvContent initialTab="videos" /></Phone>
-        </DCArtboard>
+      <DCSection id="app-estados" title="App del inversor · estados" subtitle="Sub-flujos y estados vacíos / error">
         <DCArtboard id="duda" label="HP-06 · Nueva duda" width={390} height={844}>
           <Phone><InvNewDuda /></Phone>
         </DCArtboard>
@@ -130,41 +127,47 @@ function App() {
       </DCSection>
 
       {/* ── BACKOFFICE ─────────────────────────────────── */}
-      <DCSection id="bo" title="Backoffice · Admin UMBRAL" subtitle="Desktop 1280px · un solo rol que opera todo. Sin desarrolladora, sin aprobaciones.">
+      <DCSection id="bo" title="Backoffice · Admin UMBRAL" subtitle="Desktop 1280px · un solo rol que opera todo desde Desarrollos. Inversores global, contenido, pagos y preguntas.">
         <DCArtboard id="bo-login" label="Login del equipo" width={1280} height={800}>
           <Desktop><BOLogin /></Desktop>
         </DCArtboard>
-        <DCArtboard id="bo-dev" label="HP-08 · Desarrollos" width={1280} height={800}>
+        <DCArtboard id="bo-dev" label="Desarrollos · acciones por fila ★" width={1280} height={800}>
           <Desktop><BODesarrollos /></Desktop>
         </DCArtboard>
-        <DCArtboard id="bo-newdev" label="HP-08 · Alta de desarrollo + cuotas" width={1280} height={800}>
+        <DCArtboard id="bo-newdev" label="Desarrollos · alta + cuotas" width={1280} height={800}>
           <Desktop><BONewDev /></Desktop>
         </DCArtboard>
-        <DCArtboard id="bo-inv" label="HP-09 · Inversores" width={1280} height={800}>
+        <DCArtboard id="bo-inv" label="Inversores · global + filtros ★" width={1280} height={800}>
           <Desktop><BOInversores /></Desktop>
         </DCArtboard>
-        <DCArtboard id="bo-newinv" label="HP-09 · Alta inversor + código ★" width={1280} height={800}>
+        <DCArtboard id="bo-newinv" label="Inversores · alta + código" width={1280} height={800}>
           <Desktop><BONewInv /></Desktop>
         </DCArtboard>
-        <DCArtboard id="bo-content" label="HP-10 · Carga de contenido" width={1280} height={800}>
+        <DCArtboard id="bo-content" label="Contenido · lista + agregar" width={1280} height={800}>
           <Desktop><BOContenido /></Desktop>
         </DCArtboard>
-        <DCArtboard id="bo-pagos" label="HP-11 · Panel de pagos" width={1280} height={800}>
+        <DCArtboard id="bo-addcontent" label="Contenido · agregar noticia" width={1280} height={800}>
+          <Desktop><BOContenido adding={true} /></Desktop>
+        </DCArtboard>
+        <DCArtboard id="bo-pagos" label="Pagos · marcar pagada" width={1280} height={800}>
           <Desktop><BOPagos /></Desktop>
         </DCArtboard>
-        <DCArtboard id="bo-avisos" label="HP-12 · Avisos" width={1280} height={800}>
+        <DCArtboard id="bo-avisos" label="Avisos" width={1280} height={800}>
           <Desktop><BOAvisos /></Desktop>
         </DCArtboard>
-        <DCArtboard id="bo-ventas" label="HP-13 · Solicitudes de venta" width={1280} height={800}>
+        <DCArtboard id="bo-preguntas" label="Preguntas · responder por mail ★" width={1280} height={800}>
+          <Desktop><BOPreguntas /></Desktop>
+        </DCArtboard>
+        <DCArtboard id="bo-ventas" label="Solicitudes de venta" width={1280} height={800}>
           <Desktop><BOSolicitudes /></Desktop>
         </DCArtboard>
-        <DCArtboard id="bo-metricas" label="HP-14 · Métricas por inversor" width={1280} height={800}>
+        <DCArtboard id="bo-metricas" label="Métricas por inversor" width={1280} height={800}>
           <Desktop><BOMetricas /></Desktop>
         </DCArtboard>
       </DCSection>
 
       {/* ── DEMOS VIVAS ────────────────────────────────── */}
-      <DCSection id="vivo" title="Demos interactivas" subtitle="Prototipos navegables — tocá la barra inferior / el menú lateral">
+      <DCSection id="vivo" title="Demos interactivas" subtitle="Prototipos navegables — abrí el burger menu en la app y el menú lateral en el backoffice">
         <DCArtboard id="app-live" label="App del inversor — navegable" width={390} height={844}>
           <Phone><InvApp /></Phone>
         </DCArtboard>
